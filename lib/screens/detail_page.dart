@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recipe_app/models/recipe.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../services/serviceIntegrate.dart';
 
@@ -22,6 +23,34 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     fetchRecipeDetails();
   }
 
+  // Function to open the URL
+  Future<void> _launchURL(String url) async {
+    final Uri webUrl = Uri.parse(url); // Convert string URL to Uri
+
+    // YouTube app custom URL scheme
+    final Uri youtubeUrl = Uri.parse(
+      'vnd.youtube://www.youtube.com/watch?v=${Uri.parse(url).queryParameters['v']}',
+    );
+
+    // First, try to launch the YouTube app
+    if (await canLaunchUrl(youtubeUrl)) {
+      await launchUrl(
+        youtubeUrl,
+        mode: LaunchMode.externalApplication,
+      ); // Try to open YouTube app
+    } else {
+      // If YouTube app is not available, open in the browser
+      if (await canLaunchUrl(webUrl)) {
+        await launchUrl(webUrl); // Launch in browser
+      } else {
+        print('Could not launch $url');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Could not open $url")));
+      }
+    }
+  }
+
   Future<void> fetchRecipeDetails() async {
     try {
       final fetchedRecipe = await ApiIntegration.getRecipeDetails(
@@ -35,13 +64,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       setState(() {
         isLoading = false;
       });
-      // Handle errors here, maybe show a message
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Recipe Details'),
         backgroundColor: Colors.deepPurple,
@@ -100,9 +129,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // Launch YouTube URL
-                        // You can use a package like url_launcher to open the URL
-                        // launch(recipe.youtube);
+                        _launchURL(
+                          "https://www.youtube.com/watch?v=LGY3V7EGpT0",
+                        );
                       },
                       child: Text(
                         recipe.youtube,

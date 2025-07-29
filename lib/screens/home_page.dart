@@ -1,7 +1,8 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:recipe_app/models/categories.dart';
+import 'package:recipe_app/screens/login_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/serviceIntegrate.dart';
 import 'RecipeScreen.dart';
 
@@ -50,11 +51,22 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Recipe App"),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          // Logout Button in the AppBar
+          IconButton(
+            icon: const Icon(Icons.exit_to_app, color: Colors.black),
+            onPressed: () {
+              // Show the logout confirmation dialog
+              _showLogoutDialog(context);
+            },
+          ),
+        ],
       ),
       body:
           isLoading
@@ -72,15 +84,25 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    ListView.builder(
+                    // GridView to display two cards per row
+                    GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // Two columns
+                            crossAxisSpacing:
+                                10, // Horizontal spacing between tiles
+                            mainAxisSpacing:
+                                10, // Vertical spacing between tiles
+                            childAspectRatio:
+                                0.75, // Aspect ratio to fit card size
+                          ),
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
                         final item = categories[index];
                         return GestureDetector(
                           onTap: () {
-                            // Navigate to RecipeScreen on category tap
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -91,19 +113,45 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                           child: Card(
-                            child: ListTile(
-                              leading: Image.network(
-                                item.thumb,
-                                width: 60,
-                                height: 60,
-                                fit: BoxFit.cover,
-                              ),
-                              title: Text(item.name),
-                              subtitle: Text(
-                                item.description,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    item.thumb,
+                                    height: 100,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    item.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                  ),
+                                  child: Text(
+                                    item.description,
+                                    style: const TextStyle(fontSize: 12),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -112,7 +160,6 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: navigateToAnyRecipe,
         child: FittedBox(
@@ -133,6 +180,39 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Are you sure you want to log out?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text("No"),
+            ),
+            TextButton(
+              onPressed: () async {
+                // Clear the user session from SharedPreferences
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.clear(); // Clear all saved data
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+              child: const Text("Yes"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

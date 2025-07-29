@@ -1,21 +1,56 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'register_page.dart';
 import 'home_page.dart';
+import 'login_page.dart';
 
-class LoginPage extends StatefulWidget {
+class SignUpPage extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _SignUpPageState createState() => _SignUpPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignUpPageState extends State<SignUpPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
+
+  Future<void> signUpWithEmail() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
+            email: emailController.text,
+            password: passwordController.text,
+          );
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('email', userCredential.user!.email!);
+
+      setState(() {
+        isLoading = false;
+      });
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print("Sign-Up Error: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
 
   Future<void> signInWithGoogle() async {
     GoogleSignIn googleSignIn = GoogleSignIn.instance;
@@ -44,44 +79,14 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> signInWithEmail() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-
-      final UserCredential userCredential = await _auth
-          .signInWithEmailAndPassword(
-            email: emailController.text,
-            password: passwordController.text,
-          );
-
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('email', userCredential.user!.email!);
-
-      setState(() {
-        isLoading = false;
-      });
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print("Email/Password Sign-In Error: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white70,
-      appBar: AppBar(title: const Text('Login'), backgroundColor: Colors.blue),
+      appBar: AppBar(
+        title: const Text('Sign Up'),
+        backgroundColor: Colors.blue,
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -107,11 +112,17 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(labelText: 'Full Name'),
+                    ),
+                    const SizedBox(height: 10),
+                    // Email Field
+                    TextField(
                       controller: emailController,
                       decoration: const InputDecoration(labelText: 'Email'),
                     ),
                     const SizedBox(height: 10),
-
+                    // Password Field
                     TextField(
                       controller: passwordController,
                       obscureText: true,
@@ -121,11 +132,10 @@ class _LoginPageState extends State<LoginPage> {
                     isLoading
                         ? const CircularProgressIndicator()
                         : ElevatedButton(
-                          onPressed: signInWithEmail,
-                          child: const Text('Sign In with Email'),
+                          onPressed: signUpWithEmail,
+                          child: const Text('Sign Up with Email'),
                         ),
                     const SizedBox(height: 20),
-
                     ElevatedButton(
                       onPressed: signInWithGoogle,
                       style: ElevatedButton.styleFrom(
@@ -136,21 +146,18 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 13,
+                          vertical: 15,
                         ),
                       ),
-                      child: const Text('Sign In with Google'),
+                      child: const Text('Sign Up with Google'),
                     ),
                     const SizedBox(height: 20),
 
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => SignUpPage()),
-                        );
+                        Navigator.pop(context);
                       },
-                      child: const Text("Don't have an account? Sign Up"),
+                      child: const Text("Already have an account? Login"),
                     ),
                   ],
                 ),

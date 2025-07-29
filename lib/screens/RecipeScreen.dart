@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:recipe_app/models/recipe.dart';
-
 import '../services/serviceIntegrate.dart';
 import 'detail_page.dart'; // Make sure to import your RecipeModel
 
@@ -36,6 +35,7 @@ class _RecipeScreenState extends State<RecipeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('${widget.categoryName} Recipes'),
         backgroundColor: Colors.white,
@@ -44,31 +44,70 @@ class _RecipeScreenState extends State<RecipeScreen> {
       body:
           isLoading
               ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
+              : GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 0.75,
+                ),
                 itemCount: recipes.length,
                 itemBuilder: (context, index) {
                   final recipe = recipes[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      leading: Image.network(
-                        recipe.mealThumb,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  RecipeDetailScreen(mealId: recipe.id),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      elevation: 4,
+                      color: Colors.white70,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      title: Text(recipe.meal),
-                      onTap: () {
-                        // Navigate to the RecipeDetailScreen on click
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) =>
-                                    RecipeDetailScreen(mealId: recipe.id),
+                      child: Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              recipe.mealThumb,
+                              height: 100,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        );
-                      },
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              recipe.meal,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                            ),
+                            child: Text(
+                              recipe.meal,
+                              style: const TextStyle(fontSize: 12),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
