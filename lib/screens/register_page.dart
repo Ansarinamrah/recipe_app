@@ -18,67 +18,6 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
 
-  Future<void> signUpWithEmail() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-
-      final UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(
-            email: emailController.text,
-            password: passwordController.text,
-          );
-
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('email', userCredential.user!.email!);
-
-      setState(() {
-        isLoading = false;
-      });
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
-      );
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print("Sign-Up Error: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
-    }
-  }
-
-  Future<void> signInWithGoogle() async {
-    GoogleSignIn googleSignIn = GoogleSignIn.instance;
-
-    await googleSignIn.initialize(
-      serverClientId:
-          '661686477480-2qohro25fgdt1t7h28lepephh4p658vm.apps.googleusercontent.com',
-    );
-
-    final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
-
-    if (googleUser == null) {
-      throw FirebaseAuthException(
-        code: 'ERROR_ABORTED_BY_USER',
-        message: 'Sign in aborted by user',
-      );
-    }
-
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
-
-    print(googleAuth.idToken);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => HomePage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,6 +105,67 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> signUpWithEmail() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
+            email: emailController.text,
+            password: passwordController.text,
+          );
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('email', userCredential.user!.email!);
+
+      setState(() {
+        isLoading = false;
+      });
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print("Sign-Up Error: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    GoogleSignIn googleSignIn = GoogleSignIn.instance;
+
+    await googleSignIn.initialize(
+      serverClientId:
+          '661686477480-2qohro25fgdt1t7h28lepephh4p658vm.apps.googleusercontent.com',
+    );
+
+    final GoogleSignInAccount? googleUser = await googleSignIn.authenticate();
+
+    if (googleUser == null) {
+      throw FirebaseAuthException(
+        code: 'ERROR_ABORTED_BY_USER',
+        message: 'Sign in aborted by user',
+      );
+    }
+
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    print(googleAuth.idToken);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => HomePage()),
     );
   }
 }

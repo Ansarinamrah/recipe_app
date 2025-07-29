@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:recipe_app/models/recipe.dart';
 import '../services/serviceIntegrate.dart';
-import 'detail_page.dart'; // Make sure to import your RecipeModel
+import 'detail_page.dart';
 
 class RecipeScreen extends StatefulWidget {
   final String categoryName;
@@ -19,17 +19,7 @@ class _RecipeScreenState extends State<RecipeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchRecipes(
-      widget.categoryName,
-    ); // Fetch recipes based on the category passed
-  }
-
-  Future<void> fetchRecipes(String category) async {
-    final fetchedRecipes = await ApiIntegration.getRecipe(category);
-    setState(() {
-      recipes = fetchedRecipes;
-      isLoading = false;
-    });
+    fetchRecipes(widget.categoryName);
   }
 
   @override
@@ -113,5 +103,13 @@ class _RecipeScreenState extends State<RecipeScreen> {
                 },
               ),
     );
+  }
+
+  Future<void> fetchRecipes(String category) async {
+    final fetchedRecipes = await ApiIntegration.getRecipe(category);
+    setState(() {
+      recipes = fetchedRecipes;
+      isLoading = false;
+    });
   }
 }

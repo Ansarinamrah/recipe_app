@@ -21,33 +21,6 @@ class _HomePageState extends State<HomePage> {
     fetchCategories();
   }
 
-  // Fetch categories from the API
-  Future<void> fetchCategories() async {
-    final fetchedCategories = await ApiIntegration.getCategory();
-    setState(() {
-      categories = fetchedCategories;
-      isLoading = false;
-    });
-  }
-
-  void navigateToAnyRecipe() {
-    if (categories.isNotEmpty) {
-      // Generate a random index
-      final randomIndex = Random().nextInt(categories.length);
-
-      // Get the random category
-      final randomCategory = categories[randomIndex];
-
-      // Navigate to the RecipeScreen with the random category
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => RecipeScreen(categoryName: randomCategory.name),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,11 +31,9 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          // Logout Button in the AppBar
           IconButton(
             icon: const Icon(Icons.exit_to_app, color: Colors.black),
             onPressed: () {
-              // Show the logout confirmation dialog
               _showLogoutDialog(context);
             },
           ),
@@ -84,19 +55,16 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // GridView to display two cards per row
+
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2, // Two columns
-                            crossAxisSpacing:
-                                10, // Horizontal spacing between tiles
-                            mainAxisSpacing:
-                                10, // Vertical spacing between tiles
-                            childAspectRatio:
-                                0.75, // Aspect ratio to fit card size
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                            childAspectRatio: 0.75,
                           ),
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
@@ -193,15 +161,14 @@ class _HomePageState extends State<HomePage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: const Text("No"),
             ),
             TextButton(
               onPressed: () async {
-                // Clear the user session from SharedPreferences
                 SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.clear(); // Clear all saved data
+                await prefs.clear();
 
                 Navigator.push(
                   context,
@@ -214,5 +181,28 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  Future<void> fetchCategories() async {
+    final fetchedCategories = await ApiIntegration.getCategory();
+    setState(() {
+      categories = fetchedCategories;
+      isLoading = false;
+    });
+  }
+
+  void navigateToAnyRecipe() {
+    if (categories.isNotEmpty) {
+      final randomIndex = Random().nextInt(categories.length);
+
+      final randomCategory = categories[randomIndex];
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RecipeScreen(categoryName: randomCategory.name),
+        ),
+      );
+    }
   }
 }
